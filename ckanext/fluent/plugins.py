@@ -36,4 +36,7 @@ class FluentPlugin(p.SingletonPlugin):
                 validators.fluent_tags_output,
             'fluent_core_translated_output':
                 validators.fluent_core_translated_output,
+            'fluent_conditional_language_requirement':
+                validators.fluent_conditional_language_requirement,
+            'fluent_is_choice_null': validators.fluent_is_choice_null
             }
