@@ -1,0 +1,6 @@
+{% set translations = data[field.field_name] %}
+<ul>
+    {% for lang in ['en', 'nl', 'fr', 'de'] %}
+        <li>{{ lang|upper }}: {{ h.render_markdown(translations.get(lang, '')) }}</li>
+    {% endfor %}
+</ul>
