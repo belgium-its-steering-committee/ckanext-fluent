@@ -1,4 +1,6 @@
-{% set data = h.render_markdown(h.scheming_language_text(data[field.field_name])) %}
+{% set data = h.render_markdown(h.scheming_language_text(data[field.field_name]) or
+h.benap_scheming_language_text_fallback(data[field.field_name], data['language'])) %}
+
 
 <div id="license-text-container">
   <p id="license-text-preview" style="margin: 0; padding: 0;" data-preview-text="{{ data[:100]|escape }}{% if data|length > 100 %}...{% endif %}"></p>
