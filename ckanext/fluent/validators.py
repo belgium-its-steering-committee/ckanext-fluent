@@ -386,14 +386,18 @@ def fluent_conditional_language_requirement(field, schema):
 @scheming_validator
 def fluent_is_choice_null(field, schema):
     def validator(key, data, errors, context):
-        # just in case there was an error before our validator,
-        # bail out here because our errors won't be useful
-        if errors[key]:
+        if errors.get(key):
             return
 
-        json_values = json.loads(data[key])
+        if key not in data or not isinstance(data[key], basestring):
+            data[key] = None
+            return
 
-        if all(v is None or v == "" for v in json_values.values()):
+        try:
+            json_values = json.loads(data[key])
+            if all(v is None or v == "" for v in json_values.values()):
+                data[key] = None
+        except (ValueError, TypeError):
             data[key] = None
 
     return validator
