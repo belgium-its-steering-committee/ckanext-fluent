@@ -389,7 +389,7 @@ def fluent_is_choice_null(field, schema):
         if errors.get(key):
             return
 
-        if key not in data or not isinstance(data[key], basestring):
+        if key not in data or not isinstance(data[key], str):
             data[key] = None
             return
 
