@@ -11,6 +11,10 @@ from ckanext.scheming.helpers import scheming_language_text
 from ckanext.scheming.validation import (
     scheming_validator, validators_from_string)
 
+import logging
+
+log = logging.getLogger(__name__)
+
 
 # loose definition of BCP47-like strings
 BCP_47_LANGUAGE = u'^[a-z]{2,8}(-[0-9a-zA-Z]{1,8})*$'
@@ -359,8 +363,10 @@ def fluent_conditional_language_requirement(field, schema):
         # bail out here because our errors won't be useful
         if errors[key]:
             return
-
-        descriptions_by_language = json.loads(data[key])
+        try:
+            descriptions_by_language = json.loads(data[key])
+        except TypeError:
+            return
 
         language_mapping = {
             'FRA': 'fr',
