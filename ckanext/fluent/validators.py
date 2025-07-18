@@ -11,6 +11,10 @@ from ckanext.scheming.helpers import scheming_language_text
 from ckanext.scheming.validation import (
     scheming_validator, validators_from_string)
 
+import logging
+
+log = logging.getLogger(__name__)
+
 
 # loose definition of BCP47-like strings
 BCP_47_LANGUAGE = u'^[a-z]{2,8}(-[0-9a-zA-Z]{1,8})*$'
@@ -155,13 +159,9 @@ def fluent_text(field, schema):
         if output is None:
             return
 
-        # Return None if alle values in json are None or "" (state = deleted in package_extra)
-        if all(v is None or v == "" for v in output.values()):
-            data[key] = None
-        else:
-            for lang in output:
-                del extras[prefix + lang]
-                data[key] = json.dumps(output, ensure_ascii=False)
+        for lang in output:
+            del extras[prefix + lang]
+            data[key] = json.dumps(output, ensure_ascii=False)
 
     return validator
 
@@ -355,3 +355,55 @@ def _validate_single_tag(name, validators):
         except Invalid as e:
             errors.append(e.error)
     return name, errors
+
+@scheming_validator
+def fluent_conditional_language_requirement(field, schema):
+    def validator(key, data, errors, context):
+        # just in case there was an error before our validator,
+        # bail out here because our errors won't be useful
+        if errors[key]:
+            return
+        try:
+            descriptions_by_language = json.loads(data[key])
+        except TypeError:
+            return
+
+        language_mapping = {
+            'FRA': 'fr',
+            'ENG': 'en',
+            'NLD': 'nl',
+            'DEU': 'de'
+        }
+
+        selected_metadata_languages = data.get(('language',), [])
+        language_list = json.loads(selected_metadata_languages)
+
+        for lang in language_list:
+            lang = lang.split('/')[-1]
+            two_letter_lang_code = language_mapping.get(lang)
+
+            if not descriptions_by_language.get(two_letter_lang_code):
+                errors[key].append(('%s Description of dataset needs to have a description because of the above '
+                                    'selected metadata language.'  % two_letter_lang_code.upper()))
+
+    return validator
+
+
+@scheming_validator
+def fluent_is_choice_null(field, schema):
+    def validator(key, data, errors, context):
+        if errors.get(key):
+            return
+
+        if key not in data or not isinstance(data[key], str):
+            data[key] = None
+            return
+
+        try:
+            json_values = json.loads(data[key])
+            if all(v is None or v == "" for v in json_values.values()):
+                data[key] = None
+        except (ValueError, TypeError):
+            data[key] = None
+
+    return validator

@@ -1,0 +1,55 @@
+{% set data = h.render_markdown(h.scheming_language_text(data[field.field_name]) or
+h.benap_scheming_language_text_fallback(data[field.field_name], data['language'])) %}
+
+
+<div id="license-text-container">
+  <p id="license-text-preview" style="margin: 0; padding: 0;" data-preview-text="{{ data[:100]|escape }}{% if data|length > 100 %}...{% endif %}"></p>
+  {% if data|length > 100 %}
+    <a href="#" id="license-read-more" data-full-text="{{ data|escape }}">
+      <span id="expand-icon">▼</span>
+    </a>
+  {% endif %}
+</div>
+
+<script>
+  $(document).ready(function() {
+    // Retrieve the preview text and generate the correct content
+    var previewText = $('#license-text-preview');
+    var previewContent = "{{ data[:100]|escape }}{% if data|length > 100 %}...{% endif %}";
+    var newPreviewText = previewContent.length > 100 ? previewContent.slice(3) : previewContent.slice(3, -4);
+
+    // Create the new preview element and insert it
+    $('<p>', {
+      id: 'license-text-preview',
+      text: newPreviewText,
+      css: { margin: 0, padding: 0 }
+    }).insertBefore(previewText);
+
+    // Hide the old preview element
+    previewText.hide();
+
+    // Add event listener for the "read more" link
+    $(document).on('click', '#license-read-more', function(e) {
+      e.preventDefault(); // Prevent default action
+
+      var expandIcon = $('#expand-icon');
+      var fullText = "{{ data|escape }}"; // Retrieve the full text
+
+      // Toggle between showing and hiding the full text
+      if ($('#license-text-full').length === 0) {
+        $('<p>', {
+          id: 'license-text-full',
+          text: fullText.slice(3, -4),
+          css: { margin: 0, padding: 0 }
+        }).insertAfter('#license-text-preview');
+
+        $('#license-text-preview').hide(); // Hide the preview
+        expandIcon.text('▲'); // Change the icon to up
+      } else {
+        $('#license-text-full').remove(); // Remove the full text
+        $('#license-text-preview').show(); // Show the preview
+        expandIcon.text('▼'); // Change the icon to down
+      }
+    });
+  });
+</script>
